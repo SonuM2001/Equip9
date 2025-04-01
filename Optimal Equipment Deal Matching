@@ -1,0 +1,34 @@
+import heapq
+from collections import defaultdict
+
+def match_requests_with_sellers(requests, sellers):
+    # Step 1: Organize sellers by equipment type using a min-heap
+    seller_dict = defaultdict(list)
+    
+    for equipment_type, price in sellers:
+        heapq.heappush(seller_dict[equipment_type], price)
+    
+    # Step 2: Process each request
+    results = []
+    
+    for equipment_type, max_price in requests:
+        if equipment_type in seller_dict and seller_dict[equipment_type]:
+            # Get the lowest price seller for the requested equipment
+            lowest_price = seller_dict[equipment_type][0]  # Peek at the lowest price
+            
+            # Check if the lowest price is within the buyer's max price
+            if lowest_price <= max_price:
+                results.append(lowest_price)
+            else:
+                results.append(None)
+        else:
+            results.append(None)  # No sellers available for this equipment type
+    
+    return results
+
+# Example usage
+requests = [("excavator", 50000), ("bulldozer", 70000)]
+sellers = [("excavator", 45000), ("bulldozer", 68000), ("excavator", 48000)]
+
+result = match_requests_with_sellers(requests, sellers)
+print(result)  # Output: [45000, 68000]
