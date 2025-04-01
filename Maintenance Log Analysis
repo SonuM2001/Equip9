@@ -1,0 +1,56 @@
+class FenwickTree:
+    def __init__(self, size):
+        self.size = size
+        self.tree = [0] * (size + 1)
+
+    def update(self, index, delta):
+        while index <= self.size:
+            self.tree[index] += delta
+            index += index & -index
+
+    def query(self, index):
+        total = 0
+        while index > 0:
+            total += self.tree[index]
+            index -= index & -index
+        return total
+
+    def range_query(self, left, right):
+        return self.query(right) - self.query(left - 1)
+
+def maintenance_cost_analysis(maintenance_logs, queries):
+    # Step 1: Prepare the date mapping
+    date_to_index = {}
+    index = 1
+    for _, date, _ in maintenance_logs:
+        if date not in date_to_index:
+            date_to_index[date] = index
+            index += 1
+
+    # Step 2: Initialize the Fenwick Tree
+    fenwick_tree = FenwickTree(len(date_to_index))
+
+    # Step 3: Populate the Fenwick Tree with maintenance costs
+    for equipment_id, date, cost in maintenance_logs:
+        date_index = date_to_index[date]
+        fenwick_tree.update(date_index, cost)
+
+    # Step 4: Process each query
+    results = []
+    for start_date, end_date in queries:
+        start_index = date_to_index.get(start_date, 0)
+        end_index = date_to_index.get(end_date, 0)
+        if start_index == 0 or end_index == 0:
+            results.append(0)  # If the date is not found, return 0
+        else:
+            total_cost = fenwick_tree.range_query(start_index, end_index)
+            results.append(total_cost)
+
+    return results
+
+# Example usage
+maintenance_logs = [(101, "2024-01-01", 500), (102, "2024-01-10", 300), (101, "2024-01-15", 700)]
+queries = [("2024-01-01", "2024-01-10"), ("2024-01-01", "2024-01-15")]
+
+result = maintenance_cost_analysis(maintenance_logs, queries)
+print(result)  # Output: [800, 1500]
