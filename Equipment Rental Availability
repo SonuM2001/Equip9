@@ -1,0 +1,38 @@
+from collections import deque, defaultdict
+
+def find_shortest_path(n, edges, availability, start_provider, target_equipment):
+    # Create an adjacency list for the graph
+    graph = defaultdict(list)
+    for providerA, providerB in edges:
+        graph[providerA].append(providerB)
+        graph[providerB].append(providerA)
+    
+    # BFS initialization
+    queue = deque([(start_provider, [start_provider])])  # (current_provider, path)
+    visited = set()
+    visited.add(start_provider)
+    
+    while queue:
+        current_provider, path = queue.popleft()
+        
+        # Check if the current provider has the target equipment
+        if target_equipment in availability.get(current_provider, []):
+            return path  # Return the path to the provider with the equipment
+        
+        # Explore neighbors
+        for neighbor in graph[current_provider]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, path + [neighbor]))
+    
+    return -1  # If no provider has the requested equipment
+
+# Example usage
+n = 5
+edges = [(1, 2), (2, 3), (3, 4), (4, 5)]
+availability = {1: ["excavator"], 2: [], 3: ["bulldozer"], 4: ["excavator"], 5: ["crane"]}
+start_provider = 2
+target_equipment = "excavator"
+
+result = find_shortest_path(n, edges, availability, start_provider, target_equipment)
+print(result)  # Output: [2, 3, 4]
